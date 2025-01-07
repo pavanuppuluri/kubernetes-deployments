@@ -194,11 +194,29 @@ kubectl expose deployment my-app-blue --type=LoadBalancer --name=my-app
 kubectl expose deployment my-app-green --type=LoadBalancer --name=my-app
 ```
 
-**Method 2**: Using AWS Route 53 for Traffic Switching
+**Method 2**: Set Up AWS Elastic Load Balancer (ELB)
 
-You can also manage traffic routing between Blue and Green environments using AWS Route 53 by pointing 
-a domain name (e.g., myapp.com) to the LoadBalancer IPs for both the Blue and Green environments and then 
-routing traffic between them based on weights.
+Configure an Elastic Load Balancer (ELB) to route traffic to either the Blue or Green environment. 
+
+Here’s how you can achieve this using AWS:
+
+- Create two Target Groups: one for Blue (blue-service) and one for Green (green-service).
+- Configure your ELB to forward traffic to either of the Target Groups based on the environment you want active.
+
+##### Switch Traffic Between Blue and Green
+
+To switch traffic from Blue to Green, you can update the ELB target group mapping.
+
+- Initially, the Blue Target Group will be receiving traffic.
+- After testing the Green environment, switch the ELB to route traffic to the Green Target Group.
+
+For instance, using AWS CLI:
+
+```
+aws elbv2 modify-listener --listener-arn <your-listener-arn>
+                          --default-actions
+                            Type=forward,TargetGroupArn=<green-target-group-arn>
+```
 
 #### Step 6: Rollback (If Necessary)
 If there are any issues with the Green environment, you can quickly roll back to the Blue environment by 
